@@ -1,6 +1,6 @@
 # Installation
 
 ```bash
-sudo apt install libzmqpp-dev
-
+# Required libraries
+sudo apt install libzmqpp-dev libeigen3-dev libopencv-dev
 ```

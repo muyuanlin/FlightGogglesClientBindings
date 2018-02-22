@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "agileFramework/json.hpp"
+#include "json.hpp"
 using json = nlohmann::json;
 
 namespace unity_outgoing {
@@ -120,6 +120,13 @@ inline void from_json(const json& j, RenderMetadata_t& o) {
   o.cameraIDs = j.at("cameraIDs").get<std::vector<std::string>>();
   o.channels = j.at("channels").get<std::vector<int>>();
 }
+
+// Struct for outputting parsed received messages to handler functions
+struct RenderOutput_t {
+  RenderMetadata_t renderMetadata;
+  std::vector<cv::mat> images;
+};
+
 }
 
 #endif

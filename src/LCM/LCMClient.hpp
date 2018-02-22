@@ -1,29 +1,12 @@
-#ifndef UNITYIMAGESERVER_H
-#define UNITYIMAGESERVER_H
+#ifndef LCMCLIENT_H
+#define LCMCLIENT_H
 /**
- * @file   unityImageServer.hpp
+ * @file   LCMClient.hpp
  * @author Winter Guerra
- * @brief  Listens for incoming images from Unity
+ * @brief  LCM client interface for FlightGoggles.
  */
 
-#include <fstream>
-// Include agile helpers for getting camera parameters
-#include "cameraHandler/cameraParams.hpp"
-
-// Include ZMQ bindings for comms with Unity.
-#include <iostream>
-#include <snappy.h>
-#include <string>
-#include <zmqpp/zmqpp.hpp>
-
-// Include JSON message type definitions.
-#include "jsonMessageSpec.hpp"
-#include "agileFramework/json.hpp"
-using json = nlohmann::json;
-
-#include "agileFramework/agileFramework.hpp"
-#include "agileFramework/paramsFramework.hpp"
-#include <lcmtypes/bot_core.hpp>  // Image types
+#include <FlightGogglesClient.hpp>
 
 namespace agile {
 
