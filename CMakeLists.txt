@@ -3,6 +3,9 @@ project(flightgoggles_client_bindings)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# Fix cuda linking issues
+set(CUDA_USE_STATIC_CUDA_RUNTIME, OFF)
+
 # Find OpenCV
 find_package( OpenCV REQUIRED )
 

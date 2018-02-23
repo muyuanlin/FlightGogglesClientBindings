@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <opencv2/opencv.hpp>
 #include "json.hpp"
 using json = nlohmann::json;
 
@@ -124,7 +125,7 @@ inline void from_json(const json& j, RenderMetadata_t& o) {
 // Struct for outputting parsed received messages to handler functions
 struct RenderOutput_t {
   RenderMetadata_t renderMetadata;
-  std::vector<cv::mat> images;
+  std::vector<cv::Mat> images;
 };
 
 }

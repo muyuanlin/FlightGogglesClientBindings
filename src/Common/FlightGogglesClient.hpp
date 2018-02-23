@@ -23,6 +23,9 @@ using json = nlohmann::json;
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 
+// For image operations
+#include <opencv2/opencv.hpp>
+
 class FlightGogglesClient {
 public:
 
@@ -40,7 +43,7 @@ public:
     // Send render request to Unity
     void requestRender(json status);
 
-    RenderOutput_t handleImageResponse();    
+    unity_incoming::RenderOutput_t handleImageResponse();    
 
 };
 
