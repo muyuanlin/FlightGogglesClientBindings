@@ -93,7 +93,8 @@ int main(int argc, char **argv) {
     // Generate a camera pose
     Transform3 camera_pose;
     camera_pose.translation() = Vector3(0,-1,1);
-    camera_pose.linear() = Eigen::AngleAxisd(M_PI/4.0f, Eigen::Vector3d(0,0,1)).toRotationMatrix();
+    // Set rotation matrix using pitch, roll, yaw
+    camera_pose.linear() = Eigen::AngleAxisd(M_PI/4.0f, Eigen::Vector3d(0,0,0)).toRotationMatrix();
 
     // Populate status message with new pose
     generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 0);
