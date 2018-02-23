@@ -79,7 +79,7 @@ Transform3 convertENUToNEDCoordinates(Transform3 ENUworld_T_object)
     // clang-format on
 
     Transform3 NED_pose;
-    NED_pose.matrix() = ENUworld_T_object.matrix() * ENU_pose_T_NED_pose;
+    NED_pose.matrix() = ENU_pose_T_NED_pose * ENUworld_T_object.matrix() * ENU_pose_T_NED_pose.transpose();
 
     return NED_pose;
 }
