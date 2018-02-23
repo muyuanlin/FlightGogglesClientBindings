@@ -18,16 +18,16 @@ GeneralClient::GeneralClient(){
 
 void GeneralClient::populateRenderSettings(){
   // Scene/Render settings
-  state.maxFramerate = 1e6; // make framerate really high
+  state.maxFramerate = 60; // make framerate really high
   state.sceneIsInternal = true;
-  state.sceneFilename = "Butterfly_world";
+  state.sceneFilename = "Butterfly_World";
   state.compressImage = false; // Deprecated. Will be removed in the future.
   
   // Frame Metadata
   state.camWidth = 1024;
   state.camHeight = 768;
   state.camFOV = 70.0f;
-  state.camDepthScale = 0.05; // 5cm resolution
+  state.camDepthScale = 0.01; // 5cm resolution
   
   // Prepopulate metadata of cameras
   unity_outgoing::Camera_t cam_RGB;
@@ -37,10 +37,10 @@ void GeneralClient::populateRenderSettings(){
   cam_RGB.outputIndex = 0;
 
   unity_outgoing::Camera_t cam_D;
-  cam_RGB.ID = "Camera_D";
-  cam_RGB.channels = 1;
-  cam_RGB.isDepth = true;
-  cam_RGB.outputIndex = 1;
+  cam_D.ID = "Camera_D";
+  cam_D.channels = 1;
+  cam_D.isDepth = true;
+  cam_D.outputIndex = 1;
 
   // Add cameras to persistent state
   state.cameras.push_back(cam_RGB);
@@ -84,27 +84,35 @@ int main(int argc, char **argv) {
   // Load params
   generalClient.populateRenderSettings();
 
+  // Debug
+  // int i = 0;
+
   // To test, output camera poses 
   while(true) {
 
     // Generate a camera pose
     Transform3 camera_pose;
-    camera_pose.translation() = Vector3(0,0,1.0);
+    camera_pose.translation() = Vector3(0,0,-2.0);
     camera_pose.rotate(Eigen::AngleAxisd(M_PI/4.0f, Eigen::Vector3d(0,0,1)));
 
     // Populate status message with new pose
     generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 0);
     generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 1);
+
+    // Update timestamp
+    generalClient.state.utime = generalClient.flightGoggles.getTimestamp();
     
     // request render
     generalClient.flightGoggles.requestRender(generalClient.state);
 
     // Wait for render result.
-    unity_incoming::RenderOutput_t renderOutput = generalClient.flightGoggles.handleImageResponse();
+    // unity_incoming::RenderOutput_t renderOutput = generalClient.flightGoggles.handleImageResponse();
 
-    // Display result
-    cv::imshow("Debug RGB", renderOutput.images[0]);
-    cv::imshow("Debug D", renderOutput.images[1]);
+    // // Display result
+    // cv::imshow("Debug RGB", renderOutput.images[0]);
+    // cv::imshow("Debug D", renderOutput.images[1]);
+
+    usleep(1000);
 
   }
 
