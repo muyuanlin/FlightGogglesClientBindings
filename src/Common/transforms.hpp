@@ -44,6 +44,28 @@ Transform3 convertNEDGlobalPoseToGlobalUnityCoordinates(
     return unity_pose;
 }
 
+Transform3 convertNEDGlobalPoseToGlobalUnityCoordinates(
+    Transform3 NEDworld_T_object)
+{
+    // Switch axis to unity axis.
+    Matrix4 unity_pose_T_NED_pose;
+    // x->z, y->x, z->-y
+    // clang-format off
+    unity_pose_T_NED_pose <<    0, 1, 0,  0,
+                                0, 0, -1, 0,
+                                1, 0, 0,  0,
+                                0, 0, 0,  1;
+    // clang-format on
+
+    Transform3 unity_pose;
+
+    unity_pose.matrix() = unity_pose_T_NED_pose * 
+                          NEDworld_T_object.matrix() *
+                          unity_pose_T_NED_pose.transpose();
+
+    return unity_pose;
+}
+
 Transform3 convertENUToNEDCoordinates(Transform3 ENUworld_T_object)
 {
     // Switch ENU axis to NED axis.

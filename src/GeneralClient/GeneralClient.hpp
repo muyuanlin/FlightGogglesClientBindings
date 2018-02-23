@@ -30,7 +30,9 @@ class GeneralClient {
   // Populate starting settings into state
   void populateRenderSettings();
 
-  
+  void setCameraPoseUsingROSCoordinates(Eigen::Affine3d ros_pose, int cam_index);
+
+
 
 };
 
