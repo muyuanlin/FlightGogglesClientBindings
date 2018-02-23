@@ -21,17 +21,23 @@ void FlightGogglesClient::initializeConnections()
     // // initialize the ZMQ socket context
     // context = new zmqpp::context();
     // create and bind a upload_socket
-    upload_socket.bind(client_address+":"+upload_port);
+    upload_socket.bind(client_address + ":" + upload_port);
     // create and bind a download_socket
-    download_socket.bind(client_address+":"+download_port);
+    download_socket.bind(client_address + ":" + download_port);
+    download_socket.subscribe("");
     std::cout << "Done!" << std::endl;
 }
 
-// @TODO
-void FlightGogglesClient::ensureBufferIsAllocated(unity_incoming::RenderMetadata_t){
-
+void FlightGogglesClient::ensureBufferIsAllocated(unity_incoming::RenderMetadata_t renderMetadata)
+{
+    // Check that buffer size is correct
+    int64_t requested_buffer_size = renderMetadata.camWidth * renderMetadata.camHeight * 3;
+    // Resize if necessary
+    if (_castedInputBuffer.size() != requested_buffer_size)
+    {
+        _castedInputBuffer.resize(requested_buffer_size);
+    }
 }
-
 
 ///////////////////////
 // Render Functions
@@ -56,8 +62,9 @@ bool FlightGogglesClient::requestRender(unity_outgoing::StateMessage_t requested
     //   // Skip this render frame.
     //   return;
     // }
+
     // Debug
-    std::cout << "Frame " << std::to_string(requested_state.utime) << std::endl;
+    // std::cout << "Frame " << std::to_string(requested_state.utime) << std::endl;
 
     // Create new message object
     zmqpp::message msg;
@@ -72,7 +79,7 @@ bool FlightGogglesClient::requestRender(unity_outgoing::StateMessage_t requested
     msg << json_msg.dump();
 
     // Output debug messages at 1hz
-    if (requested_state.utime > last_debug_utime + 1e6)
+    if (requested_state.utime > last_upload_debug_utime + 1e6)
     {
         std::cout << "Last message sent: \"";
         std::cout << msg.get<std::string>(0) << std::endl;
@@ -80,16 +87,109 @@ bool FlightGogglesClient::requestRender(unity_outgoing::StateMessage_t requested
         std::cout << json_msg.dump(4) << std::endl;
         std::cout << "===================" << std::endl;
         // reset time of last debug message
-        last_debug_utime = requested_state.utime;
+        last_upload_debug_utime = requested_state.utime;
     }
     // Send message without blocking.
     upload_socket.send(msg, true);
     return true;
 }
 
-// @TODO
-unity_incoming::RenderOutput_t handleImageResponse(){
+// This is a blocking call.
+unity_incoming::RenderOutput_t FlightGogglesClient::handleImageResponse()
+{
+    // Populate output
+    unity_incoming::RenderOutput_t output;
 
+    // Get data from client as fast as possible
+    zmqpp::message msg;
+    download_socket.receive(msg);
+
+    // Sanity check the packet.
+    // if (msg.parts() <= 1)
+    // {
+    //     return NULL;
+    // }
+    // Unpack message metadata.
+    std::string json_metadata_string = msg.get(0);
+    // Parse metadata.
+    unity_incoming::RenderMetadata_t renderMetadata = json::parse(json_metadata_string);
+
+    // Log the latency in ms (1,000 microseconds)
+    if (!u_packet_latency)
+    {
+        u_packet_latency = (getTimestamp() - renderMetadata.utime);
+    }
+    else
+    {
+        // avg over last ~10 frames
+        u_packet_latency =
+            ((u_packet_latency * (9) + (getTimestamp() - renderMetadata.utime)) / 10);
+    }
+
+    ensureBufferIsAllocated(renderMetadata);
+
+    // For each camera, save the received image.
+    for (uint i = 0; i < renderMetadata.cameraIDs.size(); i++)
+    {
+
+        // Reshape the received image
+        // Calculate how long the casted and reshaped image will be.
+        uint32_t imageLen = renderMetadata.camWidth * renderMetadata.camHeight * renderMetadata.channels[i];
+        // Get raw image string from ZMQ message
+        std::string imageData = msg.get(i + 1);
+        // ALL images comes as 3-channel images from Unity. However, if this camera is supposed to be single channel, we need to discard the other 2 channels.
+        // Note: We assume that if the camera is supposed to be single channel, Unity has already done the "Right Thing (TM)" and done grayscale conversion for us.
+        // This is necessary since Unity is optimized for outputting 3-channel images and dropping channels in Unity would be costly.
+        uint32_t bufferRowLength = renderMetadata.camWidth * renderMetadata.channels[i];
+        // Convert image data into std::vector<uint8_t> by iterating over the output domain
+        for (uint16_t y = 0; y < renderMetadata.camHeight; y++)
+        {
+            // Additionally, the images that come from Unity are Y-inverted, so we should invert the rows.
+            uint16_t inv_y = renderMetadata.camHeight - y - 1;
+            for (uint16_t x = 0; x < renderMetadata.camWidth; x++)
+            {
+                for (uint8_t c = 0; c < renderMetadata.channels[i]; c++)
+                {
+                    // cast the input
+                    _castedInputBuffer[y * bufferRowLength + x * renderMetadata.channels[i] + c] = imageData[inv_y * renderMetadata.camWidth * 3 + x * 3 + c];
+                }
+            }
+        }
+
+        // Pack image into cv::Mat
+        cv::Mat new_image = cv::Mat(renderMetadata.camHeight, renderMetadata.camWidth, CV_MAKETYPE(CV_8U, renderMetadata.channels[i]), _castedInputBuffer.data()).clone();
+
+        // debug
+        cv::imshow("Debug", new_image);
+
+        // Add image to output vector
+        output.images.push_back(new_image);
+    }
+
+    // Add metadata to output
+    output.renderMetadata = renderMetadata;
+
+    // Output debug at 1hz
+    if (getTimestamp() > last_download_debug_utime + 1e6)
+    {
+        // Log update FPS
+        std::cout << "Update rate: "
+                  << (num_frames * 1e6) /
+                         (getTimestamp() - last_download_debug_utime)
+                  << " ms_latency: " << u_packet_latency / 1e3 << std::endl;
+
+        last_download_debug_utime = getTimestamp();
+        num_frames = 0;
+    }
+    num_frames++;
+
+    return output;
 }
 
-
+// Get system utime
+int64_t FlightGogglesClient::getTimestamp()
+{
+    int64_t time = std::chrono::high_resolution_clock::now().time_since_epoch() /
+                   std::chrono::microseconds(1);
+    return time;
+};

@@ -8,6 +8,7 @@
  */
 
 #include <fstream>
+#include <chrono>
 
 // Include ZMQ bindings for comms with Unity.
 #include <iostream>
@@ -23,7 +24,8 @@ using json = nlohmann::json;
 #include "transforms.hpp"
 
 // For image operations
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 class FlightGogglesClient
 {
@@ -47,7 +49,10 @@ class FlightGogglesClient
     // Keep track of time of last sent/received messages
     int64_t last_uploaded_utime = 0;
     int64_t last_downloaded_utime = 0;
-    int64_t last_debug_utime = 0;
+    int64_t last_upload_debug_utime = 0;
+    int64_t last_download_debug_utime = 0;
+    int64_t u_packet_latency = 0;
+    int64_t num_frames = 0;
 
     // Constructor.
     FlightGogglesClient();
@@ -66,6 +71,9 @@ class FlightGogglesClient
     void ensureBufferIsAllocated(unity_incoming::RenderMetadata_t);
 
     unity_incoming::RenderOutput_t handleImageResponse();
+
+    // HELPER FUNCTIONS
+    static int64_t getTimestamp();
 };
 
 #endif
