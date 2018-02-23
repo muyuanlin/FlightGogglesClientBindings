@@ -27,6 +27,10 @@ void FlightGogglesClient::initializeConnections()
     std::cout << "Done!" << std::endl;
 }
 
+// @TODO
+void FlightGogglesClient::ensureBufferIsAllocated(unity_incoming::RenderMetadata_t){
+
+}
 
 
 ///////////////////////
@@ -80,4 +84,12 @@ bool FlightGogglesClient::requestRender(unity_outgoing::StateMessage_t requested
     }
     // Send message without blocking.
     upload_socket.send(msg, true);
+    return true;
 }
+
+// @TODO
+unity_incoming::RenderOutput_t handleImageResponse(){
+
+}
+
+
