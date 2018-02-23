@@ -19,6 +19,9 @@ namespace unity_outgoing {
 
 struct Camera_t {
   std::string ID;
+  // Position and rotation use Unity left-handed coordinates.
+  // Z North, X East, Y up.
+  // E.G. East, Up, North. 
   std::vector<double> position;
   std::vector<double> rotation;
   // Metadata

@@ -1,3 +1,6 @@
+#ifndef FLIGHTGOGGLESTRANSFORMS_H
+#define FLIGHTGOGGLESTRANSFORMS_H
+
 ////////////////////////////////
 // TRANSFORMS
 ////////////////////////////////
@@ -106,3 +109,5 @@ Transform3 convertCameraAndDronePoseToUnityCoordinates(
 
     return unityWorld_T_unitycam_unity;
 }
+
+#endif

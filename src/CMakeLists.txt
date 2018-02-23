@@ -1,2 +1,2 @@
 add_subdirectory(Common)
-add_subdirectory(LCM)
+add_subdirectory(GeneralClient)

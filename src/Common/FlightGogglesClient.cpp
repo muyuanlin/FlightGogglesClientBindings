@@ -57,11 +57,14 @@ bool FlightGogglesClient::requestRender(unity_outgoing::StateMessage_t requested
         return false;
     }
 
-    // // Limit Unity framerate by throttling requests
-    // if (requested_state.utime < (last_uploaded_utime + (1e6)/max_framerate)) {
-    //   // Skip this render frame.
-    //   return;
-    // }
+    // Limit Unity framerate by throttling requests
+    if (requested_state.utime < (last_uploaded_utime + (1e6)/requested_state.maxFramerate)) {
+      // Skip this render frame.
+      return false;
+    }
+
+    // Tell unity to always try its hardest to render as fast as it can.
+    requested_state.maxFramerate = 1e3;
 
     // Debug
     // std::cout << "Frame " << std::to_string(requested_state.utime) << std::endl;

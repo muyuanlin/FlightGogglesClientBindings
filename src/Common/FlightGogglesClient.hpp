@@ -20,9 +20,6 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
-// For converting ROS/LCM coordinates to Unity
-#include "transforms.hpp"
-
 // For image operations
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
