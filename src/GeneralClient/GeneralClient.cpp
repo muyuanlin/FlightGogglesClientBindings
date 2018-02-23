@@ -49,6 +49,7 @@ void GeneralClient::populateRenderSettings(){
 }
 
 void GeneralClient::setCameraPoseUsingROSCoordinates(Eigen::Affine3d ros_pose, int cam_index) {
+  // To transforms
   Transform3 NED_pose = convertENUToNEDCoordinates(ros_pose);
   Transform3 unity_pose = convertNEDGlobalPoseToGlobalUnityCoordinates(NED_pose);
 
@@ -69,11 +70,11 @@ void GeneralClient::setCameraPoseUsingROSCoordinates(Eigen::Affine3d ros_pose, i
     quat.w(),
   };
 
-
   // Set camera position and rotation
   state.cameras[cam_index].position = position;
   state.cameras[cam_index].rotation = rotation;
 }
+
 
 
 int main(int argc, char **argv) {
@@ -84,9 +85,28 @@ int main(int argc, char **argv) {
   generalClient.populateRenderSettings();
 
   // To test, output camera poses 
-  // while(true) {
+  while(true) {
 
-  // }
+    // Generate a camera pose
+    Transform3 camera_pose;
+    camera_pose.translation() = Vector3(0,0,1.0);
+    camera_pose.rotate(Eigen::AngleAxisd(M_PI/4.0f, Eigen::Vector3d(0,0,1)));
+
+    // Populate status message with new pose
+    generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 0);
+    generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 1);
+    
+    // request render
+    generalClient.flightGoggles.requestRender(generalClient.state);
+
+    // Wait for render result.
+    unity_incoming::RenderOutput_t renderOutput = generalClient.flightGoggles.handleImageResponse();
+
+    // Display result
+    cv::imshow("Debug RGB", renderOutput.images[0]);
+    cv::imshow("Debug D", renderOutput.images[1]);
+
+  }
 
   return 0;
 }

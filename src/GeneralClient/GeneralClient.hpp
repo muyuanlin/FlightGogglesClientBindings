@@ -19,7 +19,7 @@
 class GeneralClient {
  public:
   // FlightGoggles interface object
-  FlightGogglesClient flightGogglesClient;
+  FlightGogglesClient flightGoggles;
 
   // Base status object (which holds camera settings, env settings, etc)
   unity_outgoing::StateMessage_t state;

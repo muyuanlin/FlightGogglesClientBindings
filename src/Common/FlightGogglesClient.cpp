@@ -13,6 +13,7 @@
 
 FlightGogglesClient::FlightGogglesClient()
 {
+    initializeConnections();
 }
 
 void FlightGogglesClient::initializeConnections()
