@@ -12,6 +12,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
 
 // For converting ROS/LCM coordinates to Unity coordinates
 #include "transforms.hpp"

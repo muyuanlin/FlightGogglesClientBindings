@@ -75,6 +75,18 @@ void GeneralClient::setCameraPoseUsingROSCoordinates(Eigen::Affine3d ros_pose, i
   state.cameras[cam_index].rotation = rotation;
 }
 
+void imageConsumer(GeneralClient *self){
+    while (true){
+      // Wait for render result.
+      unity_incoming::RenderOutput_t renderOutput = self->flightGoggles.handleImageResponse();
+
+      // Display result
+      cv::imshow("Debug RGB", renderOutput.images[0]);
+      cv::imshow("Debug D", renderOutput.images[1]);
+    sleep(1);
+    }
+}
+
 
 
 int main(int argc, char **argv) {
@@ -84,8 +96,8 @@ int main(int argc, char **argv) {
   // Load params
   generalClient.populateRenderSettings();
 
-  // Debug
-  // int i = 0;
+  // Spin off an image consumer thread
+  std::thread imageConsumerThread(imageConsumer, &generalClient);
 
   // To test, output camera poses 
   while(true) {
@@ -106,12 +118,7 @@ int main(int argc, char **argv) {
     // request render
     generalClient.flightGoggles.requestRender(generalClient.state);
 
-    // Wait for render result.
-    // unity_incoming::RenderOutput_t renderOutput = generalClient.flightGoggles.handleImageResponse();
 
-    // // Display result
-    // cv::imshow("Debug RGB", renderOutput.images[0]);
-    // cv::imshow("Debug D", renderOutput.images[1]);
 
     usleep(1000);
 

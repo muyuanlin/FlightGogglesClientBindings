@@ -160,11 +160,14 @@ unity_incoming::RenderOutput_t FlightGogglesClient::handleImageResponse()
             }
         }
 
+        // 
+
         // Pack image into cv::Mat
-        cv::Mat new_image = cv::Mat(renderMetadata.camHeight, renderMetadata.camWidth, CV_MAKETYPE(CV_8U, renderMetadata.channels[i]), _castedInputBuffer.data()).clone();
+        cv::Mat new_image = cv::Mat(renderMetadata.camHeight, renderMetadata.camWidth, CV_MAKETYPE(CV_8U, renderMetadata.channels[i]));
+        memcpy(new_image.data, _castedInputBuffer.data(), imageLen);
 
         // debug
-        cv::imshow("Debug", new_image);
+        // cv::imshow("Debug", new_image);
 
         // Add image to output vector
         output.images.push_back(new_image);
