@@ -29,16 +29,6 @@ void FlightGogglesClient::initializeConnections()
     std::cout << "Done!" << std::endl;
 }
 
-void FlightGogglesClient::ensureBufferIsAllocated(unity_incoming::RenderMetadata_t renderMetadata)
-{
-    // Check that buffer size is correct
-    int64_t requested_buffer_size = renderMetadata.camWidth * renderMetadata.camHeight * 3;
-    // Resize if necessary
-    if (_castedInputBuffer.size() != requested_buffer_size)
-    {
-        _castedInputBuffer.resize(requested_buffer_size);
-    }
-}
 
 ///////////////////////
 // Render Functions
@@ -192,11 +182,3 @@ unity_incoming::RenderOutput_t FlightGogglesClient::handleImageResponse()
 
     return output;
 }
-
-// Get system utime
-int64_t FlightGogglesClient::getTimestamp()
-{
-    int64_t time = std::chrono::high_resolution_clock::now().time_since_epoch() /
-                   std::chrono::microseconds(1);
-    return time;
-};

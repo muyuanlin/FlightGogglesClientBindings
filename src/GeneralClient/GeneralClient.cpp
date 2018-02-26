@@ -7,18 +7,19 @@
 
 #include "GeneralClient.hpp"
 
+#define SHOW_DEBUG_IMAGE_FEED false
+
 
 ///////////////////////
 // Constructors
 ///////////////////////
 
 GeneralClient::GeneralClient(){
-
 }
 
 void GeneralClient::populateRenderSettings(){
   // Scene/Render settings
-  state.maxFramerate = 60; // make framerate really high
+  state.maxFramerate = 60; 
   state.sceneIsInternal = true;
   state.sceneFilename = "Butterfly_World";
   state.compressImage = false; // Deprecated. Will be removed in the future.
@@ -75,44 +76,48 @@ void GeneralClient::setCameraPoseUsingROSCoordinates(Eigen::Affine3d ros_pose, i
   state.cameras[cam_index].rotation = rotation;
 }
 
+////////////////////////////////////
+// Example consumers and publishers
+////////////////////////////////////
+
 void imageConsumer(GeneralClient *self){
     while (true){
-      // Wait for render result.
+      // Wait for render result (blocking).
       unity_incoming::RenderOutput_t renderOutput = self->flightGoggles.handleImageResponse();
 
       // Display result
-      cv::imshow("Debug RGB", renderOutput.images[0]);
-      cv::imshow("Debug D", renderOutput.images[1]);
-      cv::waitKey(2);
-      // sleep(1);
+      if (SHOW_DEBUG_IMAGE_FEED){
+        cv::imshow("Debug RGB", renderOutput.images[0]);
+        cv::imshow("Debug D", renderOutput.images[1]);
+        cv::waitKey(1);
+      }
     }
 }
 
 void posePublisher(GeneralClient *self){
   // Sends render requests to FlightGoggles indefinitely
-  
   while (true){
-    // Update timestamp
+    // Update timestamp of state message (needed to force FlightGoggles to rerender scene)
     self->state.utime = self->flightGoggles.getTimestamp();
-    
     // request render
     self->flightGoggles.requestRender(self->state);
-    sleep(1);
+    // Throttle requests to framerate.
+    usleep(1e6/self->state.maxFramerate);
     }
 }
 
-
+///////////////////////
+// Example Client Node
+///////////////////////
 
 int main(int argc, char **argv) {
-  // Create class
+  // Create client
   GeneralClient generalClient;
 
   // Load params
   generalClient.populateRenderSettings();
 
-
-  // Prepopulate FlightGoggles state
-  // Generate a camera pose
+  // Prepopulate FlightGoggles state with camera pose
   Transform3 camera_pose;
   camera_pose.translation() = Vector3(0,-1,1);
   // Set rotation matrix using pitch, roll, yaw
@@ -122,31 +127,14 @@ int main(int argc, char **argv) {
   generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 0);
   generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 1);
 
-  // Spin off render request thread
+  // Fork sample render request thread
   std::thread posePublisherThread(posePublisher, &generalClient);
 
-  // Spin off an image consumer thread
-  // std::thread imageConsumerThread(imageConsumer, &generalClient);
+  // Fork a sample image consumer thread
+  std::thread imageConsumerThread(imageConsumer, &generalClient);
 
-  // // To test, output camera poses 
-  // while(true) {
-
-
-
-  //   // Update timestamp
-  //   generalClient.state.utime = generalClient.flightGoggles.getTimestamp();
-    
-  //   // request render
-  //   generalClient.flightGoggles.requestRender(generalClient.state);
-
-
-
-  //   usleep(1000);
-
-  // }
-
-  // To test, receive renders indefinitely 
-  imageConsumer(&generalClient);
+  // Spin
+  while (true) {sleep(1);}
 
   return 0;
 }
