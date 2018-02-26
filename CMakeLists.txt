@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 project(flightgoggles_client_bindings)
 
 set(CMAKE_CXX_STANDARD 11)
+# Enable debug symbols
+set(CMAKE_BUILD_TYPE Debug)
 
 # Fix cuda linking issues
 set(CUDA_USE_STATIC_CUDA_RUNTIME, OFF)

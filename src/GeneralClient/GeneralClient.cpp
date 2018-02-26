@@ -83,6 +83,20 @@ void imageConsumer(GeneralClient *self){
       // Display result
       cv::imshow("Debug RGB", renderOutput.images[0]);
       cv::imshow("Debug D", renderOutput.images[1]);
+      cv::waitKey(2);
+      // sleep(1);
+    }
+}
+
+void posePublisher(GeneralClient *self){
+  // Sends render requests to FlightGoggles indefinitely
+  
+  while (true){
+    // Update timestamp
+    self->state.utime = self->flightGoggles.getTimestamp();
+    
+    // request render
+    self->flightGoggles.requestRender(self->state);
     sleep(1);
     }
 }
@@ -96,33 +110,43 @@ int main(int argc, char **argv) {
   // Load params
   generalClient.populateRenderSettings();
 
+
+  // Prepopulate FlightGoggles state
+  // Generate a camera pose
+  Transform3 camera_pose;
+  camera_pose.translation() = Vector3(0,-1,1);
+  // Set rotation matrix using pitch, roll, yaw
+  camera_pose.linear() = Eigen::AngleAxisd(M_PI/4.0f, Eigen::Vector3d(0,0,0)).toRotationMatrix();
+
+  // Populate status message with new pose
+  generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 0);
+  generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 1);
+
+  // Spin off render request thread
+  std::thread posePublisherThread(posePublisher, &generalClient);
+
   // Spin off an image consumer thread
-  std::thread imageConsumerThread(imageConsumer, &generalClient);
+  // std::thread imageConsumerThread(imageConsumer, &generalClient);
 
-  // To test, output camera poses 
-  while(true) {
+  // // To test, output camera poses 
+  // while(true) {
 
-    // Generate a camera pose
-    Transform3 camera_pose;
-    camera_pose.translation() = Vector3(0,-1,1);
-    // Set rotation matrix using pitch, roll, yaw
-    camera_pose.linear() = Eigen::AngleAxisd(M_PI/4.0f, Eigen::Vector3d(0,0,0)).toRotationMatrix();
 
-    // Populate status message with new pose
-    generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 0);
-    generalClient.setCameraPoseUsingROSCoordinates(camera_pose, 1);
 
-    // Update timestamp
-    generalClient.state.utime = generalClient.flightGoggles.getTimestamp();
+  //   // Update timestamp
+  //   generalClient.state.utime = generalClient.flightGoggles.getTimestamp();
     
-    // request render
-    generalClient.flightGoggles.requestRender(generalClient.state);
+  //   // request render
+  //   generalClient.flightGoggles.requestRender(generalClient.state);
 
 
 
-    usleep(1000);
+  //   usleep(1000);
 
-  }
+  // }
+
+  // To test, receive renders indefinitely 
+  imageConsumer(&generalClient);
 
   return 0;
 }
