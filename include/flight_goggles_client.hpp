@@ -1,5 +1,5 @@
-#ifndef FLIGHTGOGGLESCLIENT_H
-#define FLIGHTGOGGLESCLIENT_H
+#ifndef FLIGHT_GOGGLES_CLIENT_H
+#define FLIGHT_GOGGLES_CLIENT_H
 /**
  * @file   FlightGogglesClient.hpp
  * @author Winter Guerra

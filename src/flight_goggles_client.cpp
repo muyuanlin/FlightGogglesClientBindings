@@ -5,7 +5,7 @@
  * data to Unity for FlightGoggles operation.
  */
 
-#include "FlightGogglesClient.hpp"
+#include "flight_goggles_client.hpp"
 
 ///////////////////////
 // Constructor

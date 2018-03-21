@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8.3)
 project(flightgoggles_client_bindings)
 
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin )
+add_compile_options(-std=c++11)
 
-set(CMAKE_CXX_STANDARD 11)
+find_package(catkin REQUIRED)
+
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -24,6 +25,18 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
-add_subdirectory(src)
+include_directories(
+    include
+)
+
+# Add library
+add_library(flight_goggles_client STATIC src/flight_goggles_client.cpp include/flight_goggles_client.hpp)
+
+# Link in needed libraries
+target_link_libraries(flight_goggles_client zmq zmqpp ${OpenCV_LIBS})
+
+# Expose as library
+target_include_directories(flight_goggles_client PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 
 
