@@ -1,0 +1,11 @@
+<launch>
+	<!-- Generate simulated trajectory -->
+	<node pkg="flight_goggles_client_example" name="trajectory" type="trajectory_generation">
+	</node>
+
+	<!-- Generate synthetic images -->
+	<node pkg="flight_goggles_client_example" name="image" type="synthetic_images_pulisher">
+	</node>
+
+</launch>
+

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(flightgoggles_client_bindings)
+project(flight_goggles_client_lib)
 
 add_compile_options(-std=c++11)
 
@@ -26,11 +26,11 @@ find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 include_directories(
-    include
+    lib
 )
 
 # Add library
-add_library(flight_goggles_client STATIC src/flight_goggles_client.cpp include/flight_goggles_client.hpp)
+add_library(flight_goggles_client STATIC lib/flight_goggles_client.cpp lib/flight_goggles_client.hpp)
 
 # Link in needed libraries
 target_link_libraries(flight_goggles_client zmq zmqpp ${OpenCV_LIBS})
