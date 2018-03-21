@@ -7,13 +7,17 @@ Client bindings for the [FlightGoggles hardware in-the-loop simulation environme
 ```bash
 # Install required libraries
 sudo apt install libzmqpp-dev libeigen3-dev libopencv-dev
+# create ros workspace and package
+mkdir FlightGogglesClientBindings_ws
+cd FlightGogglesClientBindings_ws
+mkdir src
 # Clone repo
+cd src
 git clone --recursive https://github.com/AgileDrones/FlightGogglesClientBindings.git
-# Setup CMake
+git checkout -b ros_integration
+# compile
 cd FlightGogglesClientBindings
-mkdir build
-cd build
-cmake ../ && make
+catkin_make
 ```
 
 # Repo Format
